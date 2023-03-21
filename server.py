@@ -5,7 +5,6 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from data import pets as pet_list
 # from controllers import dogs
-from config import URL
 
 #current list of pets (feel free to add as many as you want)
 
