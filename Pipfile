@@ -8,13 +8,12 @@ flask = "*"
 flask-cors = "*"
 gunicorn = "*"
 waitress = "*"
+requests = "*"
 
 [dev-packages]
 pytest = "*"
 pytest-cov = "*"
 
-[requires]
-python_version = "3.9"
 
 [scripts]
 start_win = "waitress-serve --call server:server" # run main server for windows not working currently 
