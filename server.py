@@ -1,5 +1,6 @@
 import json
 from flask import Flask, jsonify, request 
+import os
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from data import pets as pet_list
@@ -12,7 +13,7 @@ from config import URL
 server = Flask(__name__)
 CORS(server)
 
-server.config['SQLALCHEMY_DATABASE_URI'] = URL
+server.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 db = SQLAlchemy(server)
 
 class User(db.Model):
