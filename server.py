@@ -69,7 +69,7 @@ def home():
 #route for all pets 
 @server.route('/pets', methods=['GET'])
 def pets():
-    print(pet_list)
+   
     return pet_list
 
 #routes to add service provider
@@ -81,8 +81,37 @@ def create_service_provider():
     service = Services(username = username, password= password)
     db.session.add(service)
     db.session.commit()
-    return {'id' : service.id}
+    return {'sp_id' : service.id}
 
+#route to create service provider profile
+
+@server.route('/service-profile', methods=['POST'])
+def create_service_provider_profile():
+    data = request.get_json()
+    s = Services.query.get(data["sp_id"])
+    profile = ServiceProfile(name = data["name"],
+    address = data["address"],
+    city = data["city"],
+    postcode = data["post_code"],
+    phone = data["phone"],
+    latitude = data["latitude"],
+    longitude = data["longitude"],
+    dog =  data["dog"],
+    cat = data["cat"],
+    rabbit = data["rabbit"],
+    bird = data["bird"],
+    reptile = data["reptile"],
+    daily_care = data["daily_care"],
+    boarding_hotel = data["boarding_hotel"],
+    pet_sitter = data["pet_sitter"],
+    dog_walker = data["dog_walker"],
+    vet = data["vet"],
+    grooming = data["grooming"],
+    trainer = data["trainer"],
+    service = s)
+    db.session.add(profile)
+    db.session.commit()
+    return {'p_id' : profile.id}
 #routes for dogs
 
 @server.route('/pets/dogs')
@@ -110,3 +139,4 @@ def run_db():
 
 run_db()
 
+ 
