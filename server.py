@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request
 import os
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from data.pets import pets as pet_list
+# from data.pets import pets as pet_list
 from dotenv import load_dotenv
 from controllers import dogcat_api
 
@@ -70,7 +70,7 @@ def home():
 @server.route('/pets', methods=['GET'])
 def pets():
    
-    return pet_list
+    return pets
 
 #routes to add service provider
 @server.route('/service-login', methods=['POST'])
@@ -139,4 +139,29 @@ def run_db():
 
 run_db()
 
- 
+pets={
+        "animals": [
+            "Bird",
+            "Cat",
+            "Dog",
+            "Fish",
+            "Guinea Pig",
+            "Hamster",
+            "Iguana",
+            "Jararaca",
+            "Lizard",
+            "Mouse",
+            "Newt",
+            "Owl",
+            "Parakeet",
+            "Rabbit",
+            "Salamander",
+            "Turtle",
+            "Uromastyx lizard",
+            "Vole",
+            "Weasel",
+            "Xolo Dog",
+            "Yak",
+            "Zebra Finch"
+        ]
+    }
