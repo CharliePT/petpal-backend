@@ -3,8 +3,9 @@ from flask import Flask, jsonify, request
 import os
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from data import pets as pet_list
 from dotenv import load_dotenv
+from controllers import dogcat_api
+
 
 load_dotenv()
 # from controllers import dogs
@@ -24,21 +25,52 @@ class User(db.Model):
     username = db.Column(db.String(35), unique=True)
     password = db.Column(db.Text, nullable=False)
 
+pets_list = {
+    "animals": [
+        "Bird",
+        "Cat",
+        "Dog",
+        "Fish",
+        "Guinea Pig",
+        "Hamster",
+        "Iguana",
+        "Jararaca",
+        "Lizard",
+        "Mouse",
+        "Newt",
+        "Owl",
+        "Parakeet",
+        "Rabbit",
+        "Salamander",
+        "Turtle",
+        "Uromastyx lizard",
+        "Vole",
+        "Weasel",
+        "Xolo Dog",
+        "Yak",
+        "Zebra Finch"
+    ]
+}
 
 @server.route('/')
 def home():
     return jsonify({"Welcome": 'Welcome to the petpal API'})
+    
 
 #route for all pets 
 @server.route('/pets', methods=['GET'])
 def pets():
-    return pet_list
+    return pets_list
 
 #routes for dogs
 
-# @server.route('/pets/dogs')
-# def dog():
-#     return dogs.dog_data
+@server.route('/pets/dogs')
+def dog():
+    access_token = os.environ.get('DOG_KEY')
+    api = dogcat_api("https://api.thedogapi.com/v1", access_token)
+    data = api.get_data('breeds')
+    return data
+
 
 
 def run_db():
