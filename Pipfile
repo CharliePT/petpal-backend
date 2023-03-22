@@ -9,11 +9,13 @@ flask-cors = "*"
 gunicorn = "*"
 waitress = "*"
 requests = "*"
+flask-sqlalchemy = "*"
+python-dotenv = "*"
+psycopg2 = "*"
 
 [dev-packages]
 pytest = "*"
 pytest-cov = "*"
-
 
 [scripts]
 start_win = "waitress-serve --call server:server" # run main server for windows not working currently 
