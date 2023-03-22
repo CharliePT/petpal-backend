@@ -21,11 +21,16 @@ class TestAPI():
     def test_cats(self, api):
         res = api.get('/pets/cats')
         assert res.status == '200 OK'
+
+    def test_notfound(self, api):
+        res = api.get('/pets/dogs/test')
+        assert res.status == '404 NOT FOUND'
     
-    # def test_create_service(self, api):
-    #     mock_data = json.dumps({'name': 'test1'})
-    #     mock_headers = {'Content-Type': 'application/json'}
-    #     res = api.post('/service-profile', data=mock_data, headers=mock_headers)
-    #     assert res.json['name'] == 'test1'    
+    ## not currently working: key error sp_id
+    def test_create_service(self, api):
+        mock_data = json.dumps({'name': 'test1'})
+        mock_headers = {'Content-Type': 'application/json'}
+        res = api.post('/service-profile', data=mock_data, headers=mock_headers)
+        assert res.json['name'] == 'test1'    
 
 

@@ -82,6 +82,32 @@ class ServiceProfile(db.Model):
     trainer = db.Column(db.Boolean, default=False)
     s_id = db.Column(db.Integer, db.ForeignKey('services.id'))
 
+    @property
+    def serialize(self):
+        return {
+            'id' : self.id,
+            'name' : self.name,
+            'address' : self.address,
+            'city' : self.city,
+            'postcode' : self.postcode,
+            'phone' : self.phone,
+            'latitude' : self.latitude, 
+            'longitude' : self.longitude,
+            'dog' :  self.longitude,
+            'cat' : self.cat,
+            'rabbit' : self.rabbit,
+            'bird' : self.bird,
+            'reptile' : self.reptile,
+            'daily_care' : self.daily_care,
+            'boarding_hotel' :self.boarding_hotel,
+            'pet_sitter' : self.pet_sitter,
+            'dog_walker' : self.dog_walker,
+            'vet' : self.vet,
+            'grooming' : self.grooming,
+            'trainer' : self.trainer,
+            's_id' : self.s_id
+        }
+
 
 
 
@@ -94,7 +120,6 @@ def home():
 #route for all pets 
 @server.route('/pets', methods=['GET'])
 def pets():
-   
     return pets
 
 #routes to add service provider
@@ -137,6 +162,13 @@ def create_service_provider_profile():
     db.session.add(profile)
     db.session.commit()
     return {'p_id' : profile.id}
+
+#retrieve all service provider profiles
+
+@server.route('/services', methods=['GET'])
+def get_all_services():
+    services = ServiceProfile.query.all()
+    return jsonify(services=[i.serialize for i in services])
 #routes for dogs
 
 @server.route('/pets/dogs')
@@ -158,7 +190,7 @@ def cat():
 def run_db():
     app = server
     with app.app_context():
-        db.drop_all()
+        # db.drop_all()
         db.create_all()
     return app
 
