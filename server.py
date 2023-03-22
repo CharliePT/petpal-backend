@@ -5,6 +5,8 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from data.pets import pets as pet_list
 from dotenv import load_dotenv
+from controllers import dogcat_api
+
 
 load_dotenv()
 # from controllers import dogs
@@ -62,6 +64,7 @@ class ServiceProfile(db.Model):
 @server.route('/')
 def home():
     return jsonify({"Welcome": 'Welcome to the petpal API'})
+    
 
 #route for all pets 
 @server.route('/pets', methods=['GET'])
@@ -82,9 +85,20 @@ def create_service_provider():
 
 #routes for dogs
 
-# @server.route('/pets/dogs')
-# def dog():
-#     return dogs.dog_data
+@server.route('/pets/dogs')
+def dog():
+    access_token = os.environ.get('DOG_KEY')
+    api = dogcat_api("https://api.thedogapi.com/v1", access_token)
+    data = api.get_data('breeds')
+    return data
+
+@server.route('/pets/cats')
+def cat():
+    access_token = os.environ.get('DOG_KEY')
+    api = dogcat_api("https://api.thecatapi.com/v1", access_token)
+    data = api.get_data('breeds')
+    return data
+
 
 
 def run_db():
