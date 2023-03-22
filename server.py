@@ -68,7 +68,7 @@ def pets():
 def dog():
     access_token = os.environ.get('DOG_KEY')
     api = dogcat_api("https://api.thedogapi.com/v1", access_token)
-    data = api.get_data('breed')
+    data = api.get_data('breeds')
     return data
 
 
