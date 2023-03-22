@@ -1,8 +1,7 @@
 import pytest
-from .server import server
+import server
 
 @pytest.fixture
 def api(monkeypatch):
-    test_pets = [
-
-    ]
+    api = server.server.test_client()
+    return api

@@ -1,8 +1,31 @@
 import pytest
 import server
 import requests
+import json
 
-@pytest.fixture
-def test_res():
-    res = requests.get('https://petpal.onrender.com')
-    assert 
+
+class TestAPI():
+    def test_welcome(self, api):
+        res = api.get('/')
+        assert res.status == '200 OK'
+        assert res.json['Welcome'] == 'Welcome to the petpal API'
+    
+    def test_pets(self, api):
+        res = api.get('/pets')
+        assert res.status == '200 OK'
+    
+    def test_dogs(self, api):
+        res = api.get('/pets/dogs')
+        assert res.status == '200 OK'
+
+    def test_cats(self, api):
+        res = api.get('/pets/cats')
+        assert res.status == '200 OK'
+    
+    # def test_create_service(self, api):
+    #     mock_data = json.dumps({'name': 'test1'})
+    #     mock_headers = {'Content-Type': 'application/json'}
+    #     res = api.post('/service-profile', data=mock_data, headers=mock_headers)
+    #     assert res.json['name'] == 'test1'    
+
+
