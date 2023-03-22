@@ -71,6 +71,13 @@ def dog():
     data = api.get_data('breeds')
     return data
 
+@server.route('/pets/cats')
+def cat():
+    access_token = os.environ.get('DOG_KEY')
+    api = dogcat_api("https://api.thecatapi.com/v1", access_token)
+    data = api.get_data('breeds')
+    return data
+
 
 
 def run_db():
