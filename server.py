@@ -58,6 +58,14 @@ class Services(db.Model):
     password = db.Column(db.Text, nullable=False)
     profile = db.relationship('ServiceProfile', backref='service', lazy='dynamic')
 
+    @property
+    def serialize(self):
+        return {
+            'id' : self.id,
+            'username' : self.username,
+            'password' : self.password
+        }
+
 class ServiceProfile(db.Model):
     # __tablename__ = "service_profile"
     id =db.Column(db.Integer, primary_key=True)
@@ -117,11 +125,6 @@ def home():
     return jsonify({"Welcome": 'Welcome to the petpal API'})
     
 
-#route for all pets 
-@server.route('/pets', methods=['GET'])
-def pets():
-    return pets
-
 #routes to add service provider
 @server.route('/service-login', methods=['POST'])
 def create_service_provider():
@@ -169,6 +172,43 @@ def create_service_provider_profile():
 def get_all_services():
     services = ServiceProfile.query.all()
     return jsonify(services=[i.serialize for i in services])
+
+#get service provider profile by id
+@server.route('/services/<int:id>', methods=['GET'])
+def get_services_by_id(id):
+    service = ServiceProfile.query.get_or_404(int(id))
+    return jsonify(service.serialize)
+
+
+#get service provider account by id
+
+@server.route('/services/providers/<int:id>', methods=['GET'])
+def get_providers_by_id(id):
+    service = Services.query.get_or_404(int(id))
+    return jsonify(service.serialize)
+
+#delete service provider and profile
+@server.route('/services/providers/delete/<int:id>', methods=['GET'])
+def delete_provider(id):
+    provider = Services.query.get(int(id))
+    profile = ServiceProfile.query.filter_by(s_id = id).first()
+    if provider:
+        if profile:
+            db.session.delete(profile)
+        db.session.delete(provider)
+        db.session.commit()
+        return {"response":"Provider successfully deleted"}, 201
+    else:
+        return {"Error":"Provider does not exist"}, 404
+
+    
+
+
+
+#route for all pets 
+@server.route('/pets', methods=['GET'])
+def pets():
+    return pets
 #routes for dogs
 
 @server.route('/pets/dogs')
