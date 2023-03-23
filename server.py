@@ -136,7 +136,7 @@ def create_service_provider():
     service = Services(username = username, email = email, password= password)
     db.session.add(service)
     db.session.commit()
-    return {'token' : service.id, "username": service.username }, 201
+    return {"user":{'token' : service.id, "username": service.username} }, 201
 
 #route to create service provider profile
 
@@ -188,6 +188,23 @@ def get_services_by_id(id):
 def get_providers_by_id(id):
     service = Services.query.get_or_404(int(id))
     return jsonify(service.serialize)
+
+#service provider log in
+
+@server.route('/services/service-login', methods=['POST'])
+def provider_login():
+    data = request.get_json()
+    user = Services.query.filter_by(username = data["username"]).first()
+    user_email = Services.query.filter_by(email = data["username"]).first()
+    if user or user_email:
+        if user.password == data["password"]:
+            return jsonify(token = user.id), 200
+        else:
+            return jsonify(error="wrong password"), 401
+    else:
+        return jsonify(error="username does not exist"), 402
+
+
 
 #delete service provider and profile
 @server.route('/services/providers/delete/<int:id>', methods=['GET'])
