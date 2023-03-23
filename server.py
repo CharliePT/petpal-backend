@@ -55,6 +55,7 @@ class Services(db.Model):
     # __tablename__ = "service_providers"
     id = db.Column(db.Integer, primary_key=True, unique=True)
     username = db.Column(db.String(35), unique=True)
+    email = db.Column(db.String(35), unique=True)
     password = db.Column(db.Text, nullable=False)
     profile = db.relationship('ServiceProfile', backref='service', lazy='dynamic')
 
@@ -126,15 +127,16 @@ def home():
     
 
 #routes to add service provider
-@server.route('/service-login', methods=['POST'])
+@server.route('/service-register', methods=['POST'])
 def create_service_provider():
     data = request.get_json()
-    username = data["email"]
+    username = data["username"]
+    email = data["email"]
     password = data["password"]
-    service = Services(username = username, password= password)
+    service = Services(username = username, email = email, password= password)
     db.session.add(service)
     db.session.commit()
-    return {'sp_id' : service.id}
+    return {'token' : service.id, "username": service.username }, 201
 
 #route to create service provider profile
 
