@@ -18,3 +18,7 @@ con = psycopg2.connect(
     port=url.port
 )
 
+class TestDB:
+    def test_connection():
+        assert con is not None
+
