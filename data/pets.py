@@ -1,6 +1,6 @@
+
 import json
-def show():
-    return {
+pets={
         "animals": [
             "Bird",
             "Cat",
