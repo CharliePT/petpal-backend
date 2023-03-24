@@ -12,10 +12,13 @@ requests = "*"
 flask-sqlalchemy = "*"
 python-dotenv = "*"
 psycopg2 = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 pytest = "*"
 pytest-cov = "*"
+autopep8 = "*"
+pep8 = "*"
 
 [scripts]
 start_win = "waitress-serve --call server:server" # run main server for windows not working currently 
