@@ -109,7 +109,7 @@ def create_service_provider():
     service = Services(username = username, email = email, password= password)
     db.session.add(service)
     db.session.commit()
-    return {"user":{'token' : service.id, "username": service.username} }, 201
+    return {'token' : service.id, "username": service.username }, 201
 
 #route to create service provider profile
 
@@ -139,7 +139,7 @@ def create_service_provider_profile():
     service = s)
     db.session.add(profile)
     db.session.commit()
-    return {'p_id' : profile.id}
+    return {'p_id' : profile.id},201
 
 #retrieve all service provider profiles
 
@@ -148,12 +148,17 @@ def get_all_services():
     services = ServiceProfile.query.all()
     return jsonify(services=[i.serialize for i in services])
 
-#get service provider profile by id
+#get service provider profile by profile id
 @server.route('/services/<int:id>', methods=['GET'])
 def get_services_by_id(id):
     service = ServiceProfile.query.get_or_404(int(id))
     return jsonify(service.serialize)
 
+#get service provider profile by provider id
+@server.route('/services/profile/<int:id>', methods=['GET'])
+def get_services_by_provider_id(id):
+    profile = ServiceProfile.query.filter_by(s_id = id).first()
+    return jsonify(profile.serialize)
 
 #get service provider account by id
 
