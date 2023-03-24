@@ -22,7 +22,7 @@ def signup():
     user = User(username=username, password=password)
     db.session.add(user)
     db.session.commit()
-    return jsonify({'message': 'Success'}), 200
+    return jsonify({'message': 'Success'}), 201
 
 def signin():
     data = request.get_json()
@@ -273,12 +273,12 @@ def provider_login():
         else:
             return jsonify(error="wrong password"), 401
     else:
-        return jsonify(error="username does not exist"), 402
+        return jsonify(error="username does not exist"), 404
 
 
 
 #delete service provider and profile
-@server.route('/services/providers/delete/<int:id>', methods=['GET'])
+@server.route('/services/providers/<int:id>', methods=['DELETE'])
 def delete_provider(id):
     provider = Services.query.get(int(id))
     profile = ServiceProfile.query.filter_by(s_id = id).first()
@@ -287,7 +287,7 @@ def delete_provider(id):
             db.session.delete(profile)
         db.session.delete(provider)
         db.session.commit()
-        return {"response":"Provider successfully deleted"}, 201
+        return {"response":"Provider successfully deleted"}, 202
     else:
         return {"Error":"Provider does not exist"}, 404
 
@@ -434,7 +434,7 @@ def cat():
 def run_db():
     app = server
     with app.app_context():
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
     return app
 
