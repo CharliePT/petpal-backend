@@ -18,7 +18,15 @@ con = psycopg2.connect(
     port=url.port
 )
 
-class TestDB:
-    def test_connection():
+cur = con.cursor()
+
+class TestDB():
+    def test_connection(self):
         assert con is not None
+    
+    def test_select_table(self):
+        cur.execute('SELECT * FROM "service_profile"')
+        assert cur is not None
+
+    
 
