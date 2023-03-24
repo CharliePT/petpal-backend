@@ -214,49 +214,52 @@ class ServiceProfile(db.Model):
 @server.route('/')
 def home():
     return jsonify({"Welcome": 'Welcome to the petpal API'})
-    
+
+
+
+#############################Service-providers###########################################
 
 #routes to add service provider
-# @server.route('/service-register', methods=['POST'])
-# def create_service_provider():
-#     data = request.get_json()
-#     username = data["username"]
-#     email = data["email"]
-#     password = data["password"]
-#     service = Services(username = username, email = email, password= password)
-#     db.session.add(service)
-#     db.session.commit()
-#     return {'token' : service.id, "username": service.username }, 201
+@server.route('/service-register', methods=['POST'])
+def create_service_provider():
+    data = request.get_json()
+    username = data["username"]
+    email = data["email"]
+    password = data["password"]
+    service = Services(username = username, email = email, password= password)
+    db.session.add(service)
+    db.session.commit()
+    return {'token' : service.id, "username": service.username }, 201
+
 
 #route to create service provider profile
-
-# @server.route('/service-profile', methods=['POST'])
-# def create_service_provider_profile():
-#     data = request.get_json()
-#     s = Services.query.get(data["sp_id"])
-#     profile = ServiceProfile(name = data["name"],
-#     address = data["address"],
-#     city = data["city"],
-#     postcode = data["post_code"],
-#     phone = data["phone"],
-#     latitude = data["latitude"],
-#     longitude = data["longitude"],
-#     dog =  data["dog"],
-#     cat = data["cat"],
-#     rabbit = data["rabbit"],
-#     bird = data["bird"],
-#     reptile = data["reptile"],
-#     daily_care = data["daily_care"],
-#     boarding_hotel = data["boarding_hotel"],
-#     pet_sitter = data["pet_sitter"],
-#     dog_walker = data["dog_walker"],
-#     vet = data["vet"],
-#     grooming = data["grooming"],
-#     trainer = data["trainer"],
-#     service = s)
-#     db.session.add(profile)
-#     db.session.commit()
-#     return {'p_id' : profile.id},201
+@server.route('/service-profile', methods=['POST'])
+def create_service_provider_profile():
+    data = request.get_json()
+    s = Services.query.get(data["sp_id"])
+    profile = ServiceProfile(name = data["name"],
+    address = data["address"],
+    city = data["city"],
+    postcode = data["post_code"],
+    phone = data["phone"],
+    latitude = data["latitude"],
+    longitude = data["longitude"],
+    dog =  data["dog"],
+    cat = data["cat"],
+    rabbit = data["rabbit"],
+    bird = data["bird"],
+    reptile = data["reptile"],
+    daily_care = data["daily_care"],
+    boarding_hotel = data["boarding_hotel"],
+    pet_sitter = data["pet_sitter"],
+    dog_walker = data["dog_walker"],
+    vet = data["vet"],
+    grooming = data["grooming"],
+    trainer = data["trainer"],
+    service = s)
+    db.session.add(profile)
+    db.session.commit()
+    return {'p_id' : profile.id},201
 
 #retrieve all service provider profiles
 
@@ -274,8 +277,8 @@ def get_services_by_id(id):
 #get service provider profile by provider id
 @server.route('/services/profile/<int:id>', methods=['GET'])
 def get_services_by_provider_id(id):
-    profile = ServiceProfile.query.filter_by(s_id = id).first()
-    return jsonify(profile.serialize)
+    prof = ServiceProfile.query.filter_by(s_id = id).first()
+    return jsonify(prof.serialize)
 
 #get service provider account by id
 
@@ -317,7 +320,7 @@ def delete_provider(id):
 
     
 
-
+################################# USERS  #################################################
 
 
 @server.route('/register', methods=['POST'])
@@ -347,6 +350,10 @@ def update_user(id):
 @server.route('/users/<int:id>', methods=['DELETE'])
 def delete_user(id):
     return delete_user_id(id)
+
+
+####################  Messaging   #######################################################
+
 
 @server.route("/conversations", methods=["POST"])
 def create_conversation():
@@ -426,45 +433,10 @@ def get_conversation():
         "service": service_json
     }), 200
 
-@server.route('/service-register', methods=['POST'])
-def create_service_provider():
-    data = request.get_json()
-    username = data["username"]
-    email = data["email"]
-    password = data["password"]
-    service = Services(username = username, email = email, password= password)
-    db.session.add(service)
-    db.session.commit()
-    return {'token' : service.id, "username": service.username }, 201
 
 
-@server.route('/service-profile', methods=['POST'])
-def create_service_provider_profile():
-    data = request.get_json()
-    s = Services.query.get(data["sp_id"])
-    profile = ServiceProfile(name = data["name"],
-    address = data["address"],
-    city = data["city"],
-    postcode = data["post_code"],
-    phone = data["phone"],
-    latitude = data["latitude"],
-    longitude = data["longitude"],
-    dog =  data["dog"],
-    cat = data["cat"],
-    rabbit = data["rabbit"],
-    bird = data["bird"],
-    reptile = data["reptile"],
-    daily_care = data["daily_care"],
-    boarding_hotel = data["boarding_hotel"],
-    pet_sitter = data["pet_sitter"],
-    dog_walker = data["dog_walker"],
-    vet = data["vet"],
-    grooming = data["grooming"],
-    trainer = data["trainer"],
-    service = s)
-    db.session.add(profile)
-    db.session.commit()
-    return {'p_id' : profile.id}
+###################### external API    ###################################################
+
 
 #route for all pets 
 @server.route('/pets', methods=['GET'])
