@@ -184,8 +184,8 @@ def get_services_by_id(id):
 #get service provider profile by provider id
 @server.route('/services/profile/<int:id>', methods=['GET'])
 def get_services_by_provider_id(id):
-    profile = ServiceProfile.query.filter_by(s_id = id).first()
-    return jsonify(profile.serialize)
+    prof = ServiceProfile.query.filter_by(s_id = id).first()
+    return jsonify(prof.serialize)
 
 #get service provider account by id
 
