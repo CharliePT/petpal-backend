@@ -5,7 +5,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from controllers import dogcat_api
-
+import requests
 
 load_dotenv()
 # from controllers import dogs
@@ -468,3 +468,18 @@ def run_db():
     return app
 
 run_db()
+
+
+@server.route('/pets/upload', methods=['POST'])
+def upload():
+    print('We are in pets/upload')
+    
+    response = requests.post(
+      'https://www.cutout.pro/api/v1/cartoonSelfie?cartoonType=1',
+      files={'file': open('/path/to/file.jpg', 'rb')},
+      headers={'APIKEY': '4b91eb538a75407890049fa5da335456'},
+    )
+    return str(response)
+    
+    with open('out.png', 'wb') as out:
+          out.write(response.content)
