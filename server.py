@@ -3,9 +3,9 @@ from flask import Flask, jsonify, request
 import os
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from data import pets as pet_list
 from dotenv import load_dotenv
-# from controllers import signup, signin, get_user_id, get_user_name, update_user_id, delete_user_id
+from controllers import dogcat_api
+
 
 load_dotenv()
 # from controllers import dogs
@@ -78,6 +78,32 @@ def update_user_id(user_id, new_username):
         return jsonify({"id": user.id, "username": user.username})
 
 
+pets_list = {
+    "animals": [
+        "Bird",
+        "Cat",
+        "Dog",
+        "Fish",
+        "Guinea Pig",
+        "Hamster",
+        "Iguana",
+        "Jararaca",
+        "Lizard",
+        "Mouse",
+        "Newt",
+        "Owl",
+        "Parakeet",
+        "Rabbit",
+        "Salamander",
+        "Turtle",
+        "Uromastyx lizard",
+        "Vole",
+        "Weasel",
+        "Xolo Dog",
+        "Yak",
+        "Zebra Finch"
+    ]
+}
 
 server = Flask(__name__)
 CORS(server)
@@ -188,6 +214,110 @@ class ServiceProfile(db.Model):
 @server.route('/')
 def home():
     return jsonify({"Welcome": 'Welcome to the petpal API'})
+    
+
+#routes to add service provider
+# @server.route('/service-register', methods=['POST'])
+# def create_service_provider():
+#     data = request.get_json()
+#     username = data["username"]
+#     email = data["email"]
+#     password = data["password"]
+#     service = Services(username = username, email = email, password= password)
+#     db.session.add(service)
+#     db.session.commit()
+#     return {'token' : service.id, "username": service.username }, 201
+
+#route to create service provider profile
+
+# @server.route('/service-profile', methods=['POST'])
+# def create_service_provider_profile():
+#     data = request.get_json()
+#     s = Services.query.get(data["sp_id"])
+#     profile = ServiceProfile(name = data["name"],
+#     address = data["address"],
+#     city = data["city"],
+#     postcode = data["post_code"],
+#     phone = data["phone"],
+#     latitude = data["latitude"],
+#     longitude = data["longitude"],
+#     dog =  data["dog"],
+#     cat = data["cat"],
+#     rabbit = data["rabbit"],
+#     bird = data["bird"],
+#     reptile = data["reptile"],
+#     daily_care = data["daily_care"],
+#     boarding_hotel = data["boarding_hotel"],
+#     pet_sitter = data["pet_sitter"],
+#     dog_walker = data["dog_walker"],
+#     vet = data["vet"],
+#     grooming = data["grooming"],
+#     trainer = data["trainer"],
+#     service = s)
+#     db.session.add(profile)
+#     db.session.commit()
+#     return {'p_id' : profile.id},201
+
+#retrieve all service provider profiles
+
+@server.route('/services', methods=['GET'])
+def get_all_services():
+    services = ServiceProfile.query.all()
+    return jsonify(services=[i.serialize for i in services])
+
+#get service provider profile by profile id
+@server.route('/services/<int:id>', methods=['GET'])
+def get_services_by_id(id):
+    service = ServiceProfile.query.get_or_404(int(id))
+    return jsonify(service.serialize)
+
+#get service provider profile by provider id
+@server.route('/services/profile/<int:id>', methods=['GET'])
+def get_services_by_provider_id(id):
+    profile = ServiceProfile.query.filter_by(s_id = id).first()
+    return jsonify(profile.serialize)
+
+#get service provider account by id
+
+@server.route('/services/providers/<int:id>', methods=['GET'])
+def get_providers_by_id(id):
+    service = Services.query.get_or_404(int(id))
+    return jsonify(service.serialize)
+
+#service provider log in
+
+@server.route('/services/service-login', methods=['POST'])
+def provider_login():
+    data = request.get_json()
+    user = Services.query.filter_by(username = data["username"]).first()
+    user_email = Services.query.filter_by(email = data["username"]).first()
+    if user or user_email:
+        if user.password == data["password"]:
+            return jsonify(token = user.id), 200
+        else:
+            return jsonify(error="wrong password"), 401
+    else:
+        return jsonify(error="username does not exist"), 402
+
+
+
+#delete service provider and profile
+@server.route('/services/providers/delete/<int:id>', methods=['GET'])
+def delete_provider(id):
+    provider = Services.query.get(int(id))
+    profile = ServiceProfile.query.filter_by(s_id = id).first()
+    if provider:
+        if profile:
+            db.session.delete(profile)
+        db.session.delete(provider)
+        db.session.commit()
+        return {"response":"Provider successfully deleted"}, 201
+    else:
+        return {"Error":"Provider does not exist"}, 404
+
+    
+
+
 
 
 @server.route('/register', methods=['POST'])
@@ -339,20 +469,57 @@ def create_service_provider_profile():
 #route for all pets 
 @server.route('/pets', methods=['GET'])
 def pets():
-    return pet_list
-
+    return pets
 #routes for dogs
 
-# @server.route('/pets/dogs')
-# def dog():
-#     return dogs.dog_data
+@server.route('/pets/dogs')
+def dog():
+    access_token = os.environ.get('DOG_KEY')
+    api = dogcat_api("https://api.thedogapi.com/v1", access_token)
+    data = api.get_data('breeds')
+    return data
+
+@server.route('/pets/cats')
+def cat():
+    access_token = os.environ.get('DOG_KEY')
+    api = dogcat_api("https://api.thecatapi.com/v1", access_token)
+    data = api.get_data('breeds')
+    return data
+
 
 
 def run_db():
     app = server
     with app.app_context():
-        db.drop_all()
+        # db.drop_all()
         db.create_all()
     return app
 
 run_db()
+
+pets={
+        "animals": [
+            "Bird",
+            "Cat",
+            "Dog",
+            "Fish",
+            "Guinea Pig",
+            "Hamster",
+            "Iguana",
+            "Jararaca",
+            "Lizard",
+            "Mouse",
+            "Newt",
+            "Owl",
+            "Parakeet",
+            "Rabbit",
+            "Salamander",
+            "Turtle",
+            "Uromastyx lizard",
+            "Vole",
+            "Weasel",
+            "Xolo Dog",
+            "Yak",
+            "Zebra Finch"
+        ]
+    }
