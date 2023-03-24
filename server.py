@@ -477,7 +477,7 @@ def upload():
     response = requests.post(
       'https://www.cutout.pro/api/v1/cartoonSelfie?cartoonType=1',
       files={'file': open('/path/to/file.jpg', 'rb')},
-      headers={'APIKEY': '4b91eb538a75407890049fa5da335456'},
+      headers={'APIKEY': 'KEYGOES HERE'},
     )
     return str(response)
     
