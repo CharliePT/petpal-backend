@@ -15,6 +15,7 @@ load_dotenv()
 
 server = Flask(__name__)
 CORS(server)
+server.config['CORS_HEADERS'] = 'Content-Type'
 
 server.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 db = SQLAlchemy(server)
