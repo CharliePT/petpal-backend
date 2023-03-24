@@ -6,3 +6,4 @@ Pipfile.lock
 venv/
 .env
 config.py
+mynotes.md
