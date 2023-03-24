@@ -459,8 +459,6 @@ def cat():
     data = api.get_data('breeds')
     return data
 
-
-
 def run_db():
     app = server
     with app.app_context():
