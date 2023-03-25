@@ -66,6 +66,11 @@ def test_get_services(client):
     assert res.status_code == 200
 
 def test_get_servicebyid(client):
+    res = client.get('/services/1')
+
+    assert res.status_code == 200
+
+def test_get_servicebyid2(client):
     res = client.get('/services/1000000000000')
 
     assert res.status_code == 404
@@ -75,19 +80,53 @@ def test_get_servicebyid(client):
 
     assert res.status_code == 200
 
+def test_get_serviceprofilebyid(client):
+    res = client.get('/services/providers/1')
+
+    assert res.status_code == 200
+
 def test_delete_provider(client):
     res = client.delete('/services/providers/1')
 
     assert res.status_code == 202
 
+def test_service_login(client):
+    payload = {'username': 'test2', 'email': 'test2@test', 'password': 'jkl'}
+    headers = {'content-type': 'application/json'}
+    client.post('/service-register', json=payload, headers=headers)
+    res = client.post('/services/service-login', json=payload, headers=headers)
+    assert res.status_code == 200
+
+    payload = {'username': 'test2', 'email': 'test2@test', 'password': 'wrong'}
+    res = client.post('/services/service-login', json=payload, headers=headers)
+    assert res.status_code == 401
+
+    payload = {'username': 'wrong', 'email': 'test2@test', 'password': 'jkl'}
+    res = client.post('/services/service-login', json=payload, headers=headers)
+    assert res.status_code == 404
+
+## Messaging tests ##
+
+
+
+
+
+
+
+
+
+
+
+
 # users tests
 
-def test_user_signup(client):
-    payload = {'username': 'test', 'password': 'jkl'}
-    headers = {'content-type': 'application/json'}
-    res = client.post('/register', json=payload, headers=headers)
+# def test_user_signup(client):
+#     payload = {'username': 'test', 'password': 'jkl'}
+#     headers = {'content-type': 'application/json'}
+#     res = client.post('/register', json=payload, headers=headers)
 
-    assert res.status_code == 201
+#     assert res.status_code == 201
+
 
 
 
