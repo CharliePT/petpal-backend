@@ -107,16 +107,7 @@ def test_service_login(client):
 
 ## Messaging tests ##
 
-
-
-
-
-
-
-
-
-
-
+### The below test causes tests to run forever and I don't know why
 
 # users tests
 
@@ -126,6 +117,15 @@ def test_service_login(client):
 #     res = client.post('/register', json=payload, headers=headers)
 
 #     assert res.status_code == 201
+
+
+
+
+
+
+
+
+
 
 
 
