@@ -1,10 +1,13 @@
 import json
-from flask import Flask, jsonify, request 
+from flask import Flask, jsonify, request, session
+from flask_session import Session
 import os
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 from dotenv import load_dotenv
 from controllers import dogcat_api
+from uuid import uuid4
 
 
 load_dotenv()
@@ -13,20 +16,22 @@ load_dotenv()
 #current list of pets (feel free to add as many as you want)
 def signup():
     data = request.get_json()
-    username = data.get('username')
+    username = data.get('userName')
     password = data.get('password')
-    if not username or not password:
-        return jsonify({'error': 'Incorect credintials'}), 409
+    # if not username or not password:
+    #     return jsonify({'error': 'Incorect credintials'}), 409
     if User.query.filter_by(username=username).first():
-        return jsonify({'error': 'Username exists'}), 409
+        return jsonify({'error': 'Username exists'})
     user = User(username=username, password=password)
     db.session.add(user)
     db.session.commit()
-    return jsonify({'message': 'Success'}), 200
+    return jsonify({
+        "username": user.username,
+    }), 200
 
 def signin():
     data = request.get_json()
-    username = data.get('username')
+    username = data.get('userName')
     password = data.get('password')
     print(username)
     print(password)
@@ -34,11 +39,45 @@ def signin():
     if not user or not user.check_password(password):
         return jsonify({"error": "Unauthorized"}), 401
     print(user)
+    session["id"] = user.id
     return jsonify({
         "id": user.id,
-        "username": user.username,
-        "login": True
+        "username": username,
     })
+
+# def get_users():
+#     user_id = session.get("id")
+
+#     if not user_id:
+#         return jsonify({"error": "Unauthorised"}), 401
+    
+#     user = User.query.filter_by(id=user_id).first()
+#     return jsonify({
+#         "id": user.id,
+#         "username": user.username
+#     })
+
+def get_users():
+    user_id = session.get("id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorised"}), 401
+    
+    user = User.query.filter_by(id=user_id).first()
+    if user:
+        return jsonify({
+            "id": user.id,
+            "username": user.username
+        })
+
+    service = Services.query.filter_by(id=user_id).first()
+    if service:
+        return jsonify({
+            "id": service.id,
+            "username": service.username
+        })
+
+    return jsonify({"error": "User or Service not found"}), 404
 
 def get_user_id(id):
     user = User.query.get(id)
@@ -77,6 +116,17 @@ def update_user_id(user_id, new_username):
 
         return jsonify({"id": user.id, "username": user.username})
 
+def update_password_id(user_id, new_password):
+    user = User.query.get(user_id)
+
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+    else:
+        user.password = new_password
+        db.session.commit()
+
+        return jsonify({"id": user.id, "password": user.password})
+
 
 pets_list = {
     "animals": [
@@ -106,14 +156,21 @@ pets_list = {
 }
 
 server = Flask(__name__)
-CORS(server)
+CORS(server, supports_credentials=True)
+server.config['SECRET_KEY'] = 'supersecret'
+SESSION_PERMANENT = False
+SESSION_TYPE = 'sqlalchemy'
+Session(server)
 
 server.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 db = SQLAlchemy(server)
 
+def get_uuid():
+    return uuid4().hex
+
 class User(db.Model):
     __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True, unique=True)
+    id = db.Column(db.String(32), primary_key=True, unique=True, default=get_uuid)
     username = db.Column(db.String(35), unique=True)
     password = db.Column(db.Text, nullable=False)
 
@@ -123,22 +180,23 @@ class User(db.Model):
 class Conversation(db.Model):
     __tablename__ = "conversations"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    service_id = db.Column(db.Integer, db.ForeignKey("services.id"), nullable=False)
+    user_id = db.Column(db.String(32), db.ForeignKey("users.id"), nullable=False)
+    service_id = db.Column(db.String(32), db.ForeignKey("services.id"), nullable=False)
     messages = db.relationship("Message", backref="conversation", lazy=True)
 
 class Message(db.Model):
     __tablename__ = "messages"
     id = db.Column(db.Integer, primary_key=True)
     conversation_id = db.Column(db.Integer, db.ForeignKey("conversations.id"), nullable=False)
-    sender_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    sender_user_id = db.Column(db.String(32), db.ForeignKey("users.id"), nullable=True)
+    sender_service_id = db.Column(db.String(32), db.ForeignKey("services.id"), nullable=True)
     content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False)
 
     def serialize(self):
         return {
             "id": self.id,
-            "sender_id": self.sender_id,
+            "sender_user_id": self.sender_user_id,
+            "sender_service_id": self.sender_service_id,
             "content": self.content,
             "conversation_id": self.conversation_id
         }
@@ -146,11 +204,14 @@ class Message(db.Model):
     
 class Services(db.Model):
     # __tablename__ = "service_providers"
-    id = db.Column(db.Integer, primary_key=True, unique=True)
+    id = db.Column(db.String(32), primary_key=True, unique=True, default=get_uuid)
     username = db.Column(db.String(35), unique=True)
     email = db.Column(db.String(35), unique=True)
     password = db.Column(db.Text, nullable=False)
     profile = db.relationship('ServiceProfile', backref='service', lazy='dynamic')
+
+    def check_password(self, password):
+        return self.password == password
 
     @property
     def serialize(self):
@@ -182,7 +243,7 @@ class ServiceProfile(db.Model):
     vet = db.Column(db.Boolean, default=False)
     grooming = db.Column(db.Boolean, default=False)
     trainer = db.Column(db.Boolean, default=False)
-    s_id = db.Column(db.Integer, db.ForeignKey('services.id'))
+    s_id = db.Column(db.String(32), db.ForeignKey('services.id'))
 
     @property
     def serialize(self):
@@ -286,18 +347,34 @@ def get_providers_by_id(id):
 
 #service provider log in
 
+# @server.route('/services/service-login', methods=['POST'])
+# def provider_login():
+#     data = request.get_json()
+#     user = Services.query.filter_by(username = data["username"]).first()
+#     user_email = Services.query.filter_by(email = data["userEmail"]).first()
+#     if user or user_email:
+#         if user.password == data["password"]:
+#             return jsonify(token = user.id), 200
+#         else:
+#             return jsonify(error="wrong password"), 401
+#     else:
+#         return jsonify(error="username does not exist"), 402
+
 @server.route('/services/service-login', methods=['POST'])
 def provider_login():
     data = request.get_json()
-    user = Services.query.filter_by(username = data["username"]).first()
-    user_email = Services.query.filter_by(email = data["username"]).first()
-    if user or user_email:
-        if user.password == data["password"]:
-            return jsonify(token = user.id), 200
-        else:
-            return jsonify(error="wrong password"), 401
-    else:
-        return jsonify(error="username does not exist"), 402
+    username = data.get('serviceName')
+    email = data.get('serviceEmail')
+    password = data.get('servicePassword')
+    service = Services.query.filter_by(username=username).first()
+    if not service or not service.check_password(password):
+        return jsonify({"error": "Unauthorized"}), 401
+    session["id"] = service.id
+    return jsonify({
+        "id": service.id,
+        "serviceName": service.username,
+        "email": service.email
+    })
 
 
 
@@ -315,9 +392,6 @@ def delete_provider(id):
     else:
         return {"Error":"Provider does not exist"}, 404
 
-    
-
-
 
 
 @server.route('/register', methods=['POST'])
@@ -328,9 +402,9 @@ def register():
 def login():
     return signin()
 
-# @server.route('/users', methods=['GET'])
-# def get_uses():
-#     return get_users()
+@server.route('/user', methods=['GET'])
+def get_uses():
+    return get_users()
 
 @server.route('/users/<int:id>', methods=['GET'])
 def get_user_by_id(id):
@@ -344,23 +418,25 @@ def get_user_by_name(username):
 def update_user(id):
     return update_user_id(id)
 
+@server.route('/users/<int:id>', methods=['PUT'])
+def update_password(id):
+    return update_password_id(id)
+
 @server.route('/users/<int:id>', methods=['DELETE'])
 def delete_user(id):
     return delete_user_id(id)
 
 @server.route("/conversations", methods=["POST"])
 def create_conversation():
-    # Get the user and service IDs from the request data
+
     user_id = request.json.get("user_id")
     service_id = request.json.get("service_id")
 
-    # Check if the user and service exist
     user = User.query.get(user_id)
     service = Services.query.get(service_id)
     if not user or not service:
         return({"error": "User or service not found"})
 
-    # Create a new conversation between the user and service
     conversation = Conversation(user_id=user_id, service_id=service_id)
     db.session.add(conversation)
     db.session.commit()
@@ -369,73 +445,96 @@ def create_conversation():
 
 @server.route("/conversations/<int:conversation_id>/messages", methods=["POST"])
 def add_message(conversation_id):
-    # Get the sender ID and message content from the request data
-    sender_id = request.json.get("sender_id")
+    sender_id = int(request.json.get("sender_id"))
     content = request.json.get("content")
 
-    # Check if the conversation exists
     conversation = Conversation.query.get(conversation_id)
     if not conversation:
-        return({"error": "Conversation not found"})
+        return {"error": "Conversation not found"}
 
-    # Check if the sender is a participant in the conversation
-    if sender_id not in [conversation.user_id]:
-        print(conversation.user_id)
-        return({"error": "Sender is not a participant in the conversation"})
+    if sender_id not in [conversation.user_id, conversation.service_id]:
+        return {"error": "Sender is not a participant in the conversation"}
 
-    # Create a new message in the conversation
-    message = Message(sender_id=sender_id, content=content, conversation_id=conversation_id)
+    if sender_id == conversation.user_id:
+        sender_user_id = sender_id
+        sender_service_id = None
+    else:
+        sender_user_id = None
+        sender_service_id = sender_id
+
+    message = Message(sender_user_id=sender_user_id, sender_service_id=sender_service_id, content=content, conversation_id=conversation_id)
     db.session.add(message)
     db.session.commit()
 
     return jsonify({"message": "Message added successfully"}), 201
 
 @server.route("/conversations", methods=["GET"])
-def get_conversation():
-    # Get the conversation ID from the request data
-    conversation_id = request.args.get("conversation_id")
+def get_conversations_by_user():
+    user_id = request.args.get("user_id")
 
-    # Check if the conversation exists
+    conversations = Conversation.query.filter(
+        or_(Conversation.user_id == user_id, Conversation.service_id == user_id)
+    ).all()
+
+    conversation_list = []
+    for conversation in conversations:
+        user = User.query.get(conversation.user_id)
+        service = Services.query.get(conversation.service_id)
+
+        conversation_dict = {
+            "id": conversation.id,
+            "user_id": conversation.user_id,
+            "service_id": conversation.service_id
+        }
+        user_json = {
+            "id": user.id,
+            "username": user.username
+        }
+        service_json = {
+            "id": service.id,
+            "username": service.username
+        }
+
+        conversation_list.append({
+            "conversation": conversation_dict,
+            "user": user_json,
+            "service": service_json
+        })
+
+    return jsonify({"conversations": conversation_list}), 200
+
+@server.route("/conversations/<int:conversation_id>/messages", methods=["GET"])
+def get_messages(conversation_id):
+
     conversation = Conversation.query.get(conversation_id)
     if not conversation:
-        return({"error": "Conversation not found"})
+        return {"error": "Conversation not found"}
 
-    # Get the user and service objects for the participants
-    user = User.query.get(conversation.user_id)
-    service = Services.query.get(conversation.service_id)
+    messages = Message.query.filter_by(conversation_id=conversation_id).all()
 
-    # Serialize the conversation and participant objects to JSON format
-    conversation_json = {
-        "id": conversation.id,
-        "user_id": conversation.user_id,
-        "service_id": conversation.service_id
-    }
-    user_json = {
-        "id": user.id,
-        "username": user.username
-    }
-    service_json = {
-        "id": service.id,
-        "username": service.username
-    }
+    message_list = []
+    for message in messages:
+        sender_id = message.sender_user_id or message.sender_service_id
+        sender = User.query.get(sender_id) if message.sender_user_id else Services.query.get(sender_id)
+        message_dict = {
+            "id": message.id,
+            "sender": sender.username,
+            "content": message.content
+        }
+        message_list.append(message_dict)
 
-    # Return the conversation and participant objects as a response
-    return jsonify({
-        "conversation": conversation_json,
-        "user": user_json,
-        "service": service_json
-    }), 200
+    return jsonify({"messages": message_list}), 200
 
 @server.route('/service-register', methods=['POST'])
 def create_service_provider():
     data = request.get_json()
-    username = data["username"]
-    email = data["email"]
-    password = data["password"]
+    username = data["serviceName"]
+    email = data["serviceEmail"]
+    password = data["servicePassword"]
     service = Services(username = username, email = email, password= password)
     db.session.add(service)
     db.session.commit()
-    return {'token' : service.id, "username": service.username }, 201
+    return {'id' : service.id, "username": service.username }, 201
 
 
 @server.route('/service-profile', methods=['POST'])
@@ -491,7 +590,7 @@ def cat():
 def run_db():
     app = server
     with app.app_context():
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
     return app
 
