@@ -1,7 +1,8 @@
 import pytest
-from server import server
+from server import server, db
 import requests
 import json
+from unittest.mock import MagicMock, create_autospec, patch
 
 
 class TestAPI():
@@ -105,18 +106,22 @@ def test_service_login(client):
     res = client.post('/services/service-login', json=payload, headers=headers)
     assert res.status_code == 404
 
-## Messaging tests ##
-
-### The below test causes tests to run forever and I don't know why
-def test_user_signup(client):
-    payload = {'username': 'test', 'password': 'jkl'}
-    headers = {'content-type': 'application/json'}
-    res = client.post('/register', json=payload, headers=headers)
-
-    assert res.status_code == 201
 
 # users tests
+## The below test causes tests to run forever and I don't know why
+def test_user_signup(client):
+    with server.app_context():
+        mock_db = create_autospec(db)
+        with patch('server.db', mock_db):
+            
+            payload = {'username': 'test', 'password': 'jkl'}
+            headers = {'content-type': 'application/json'}
+            res = client.post('/register', data=json.dumps(payload), content_type='application/json')
 
+            assert res.status_code == 201
+
+
+## Messaging tests ##
 
 
 
