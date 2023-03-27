@@ -541,11 +541,65 @@ def cat():
     data = api.get_data('breeds')
     return data
 
+
+@server.route('/pets/upload', methods=['POST'])
+def upload():
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+    api_key = os.getenv("CLOUDINARY_API_KEY")
+    api_secret = os.getenv("CLOUDINARY_API_SECRET")
+    secure = os.getenv("CLOUDINARY_SECURE") == "True"
+
+    cloudinary.config(
+        cloud_name=cloud_name,
+        api_key=api_key,
+        api_secret=api_secret,
+        secure=secure
+    )
+
+    url = None
+    if request.method == 'POST':
+        file_to_upload = (request.files['image'])
+        server.logger.info('%s file_to_upload', file_to_upload)
+        if file_to_upload:
+            upload_result = cloudinary.uploader.upload(file_to_upload, public_id=file_to_upload.filename)
+            server.logger.info(upload_result)
+            url = upload_result.get('url')
+
+    return jsonify({'url': url})
+
+class Pet(db.Model):
+    id = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    age = db.Column(db.Integer, nullable=True)
+    species = db.Column(db.String(50), nullable=False)
+    instructions = db.Column(db.Text)
+
+    def __repr__(self):
+        return f'<Pet {self.id}>'
+
+@server.route('/upload/pet-profile', methods=['POST'])
+def add_pet():
+    data = request.json
+    pet = Pet(id=data['id'], name=data['name'], age=data['age'], species=data['species'], instructions=data.get('instructions'))
+    db.session.add(pet)
+    db.session.commit()
+    return jsonify({'message': 'Pet Profile added successfully'})
+
+@server.route('/upload/pet-profile/<id>', methods=['GET'])
+def get_pet(id):
+    pet = Pet.query.get(id)
+    if pet:
+        return jsonify({'id': pet.id, 'name': pet.name, 'age': pet.age, 'species': pet.species, 'instructions': pet.instructions})
+    else:
+        return jsonify({'message': 'Pet Profile not found'})
+
+
 def run_db():
     app = server
     with app.app_context():
         db.drop_all()
         db.create_all()
     return app
-
+    
 run_db()
+
