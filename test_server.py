@@ -1,5 +1,5 @@
 import pytest
-from server import server, db
+from server import server, db, User
 import requests
 import json
 from unittest.mock import MagicMock, create_autospec, patch
@@ -115,10 +115,59 @@ def test_user_signup(client):
         with patch('server.db', mock_db):
             
             payload = {'username': 'test', 'password': 'jkl'}
-            headers = {'content-type': 'application/json'}
             res = client.post('/register', data=json.dumps(payload), content_type='application/json')
-
             assert res.status_code == 201
+
+            res_data = json.loads(res.data)
+            assert res_data['message'] == 'Success'
+
+#this block will test all remaining user functions
+def test_user(client):
+    with server.app_context():
+        mock_db = create_autospec(db)
+        with patch('server.db', mock_db):
+            # create user
+            user = User(id = 0, username = 'test', password = 'jkl')
+            db.session.add(user)
+            db.session.commit()
+            
+            # check login
+            payload = {'username': 'test', 'password': 'jkl'}
+            res = client.post('/login', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 200
+
+            payload2 = {'username': 'test', 'password': 'fail'}
+            res = client.post('/login', data=json.dumps(payload2), content_type='application/json')
+            assert res.status_code == 401
+
+            payload = {'username': 'test2', 'password': 'jkl'}
+            res = client.post('/login', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 401
+
+            res = client.get('/users/0')
+            assert res.status_code == 200
+
+            res = client.get('/users/99999')
+            assert res.status_code == 404
+
+            res = client.get('/users/test')
+            assert res.status_code == 200
+
+            res = client.get('/users/fail')
+            assert res.status_code == 404
+
+            ##update user
+            payload = {'new_username': 'test_update'}
+            res = client.put('/users/0', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code ==200
+
+
+
+
+
+
+
+
 
 
 ## Messaging tests ##
