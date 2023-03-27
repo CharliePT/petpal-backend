@@ -1,5 +1,5 @@
 import pytest
-from server import server, db, User
+from server import server, db, User, Conversation, Message, Services
 import requests
 import json
 from unittest.mock import MagicMock, create_autospec, patch
@@ -163,31 +163,35 @@ def test_user(client):
 
             res = client.put('/users/999999999', data=json.dumps(payload), content_type='application/json')
             assert res.status_code == 404
-            
 
+            ##delete user
+            res = client.delete('/users/0')
+            assert res.status_code == 200
 
-
-
-
-
-
-
-
-
-
+            res = client.delete('/users/999999999')
+            assert res.status_code == 404
 
 ## Messaging tests ##
 
+# def test_messaging(client):
+#     with server.app_context():
+#         mock_db = create_autospec(db)
+#         with patch('server.db', mock_db):
+#             # enter test data into db
+#             user = User(id = 1, username = 'test1', password = 'jkl')
+#             service = Services(id = 1, username = 'service', email = 'service@test', password = 'jkl')
+#             db.session.add(user)
+#             db.session.commit()
+#             db.session.add(service)
+#             db.session.commit()
 
+            # payload = {'user_id': 0, 'service_id': 0}
+            # res = client.post('/conversations', data=json.dumps(payload), content_type='application/json')
+            # assert res.status_code == 200
 
-
-
-
-
-
-
-
-
+            # payload = {'user_id': 999999, 'service_id': 999999}
+            # res = client.post('/conversations', data=json.dumps(payload), content_type='application/json')
+            # assert res.status_code == 404        
 
 
 
