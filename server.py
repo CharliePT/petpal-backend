@@ -1,11 +1,13 @@
 import json
-from flask import Flask, jsonify, request 
+from flask import Flask, jsonify, request
 import os
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from controllers import dogcat_api
 import requests
+import cloudinary
+import cloudinary.uploader
 
 load_dotenv()
 # from controllers import dogs
@@ -469,17 +471,26 @@ def run_db():
 
 run_db()
 
-
 @server.route('/pets/upload', methods=['POST'])
 def upload():
-    print('We are in pets/upload')
-    
-    response = requests.post(
-      'https://www.cutout.pro/api/v1/cartoonSelfie?cartoonType=1',
-      files={'file': open('/path/to/file.jpg', 'rb')},
-      headers={'APIKEY': 'KEYGOES HERE'},
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
+    api_key = os.getenv("CLOUDINARY_API_KEY")
+    api_secret = os.getenv("CLOUDINARY_API_SECRET")
+    secure = os.getenv("CLOUDINARY_SECURE") == "True"
+
+    cloudinary.config(
+        cloud_name=cloud_name,
+        api_key=api_key,
+        api_secret=api_secret,
+        secure=secure
     )
-    return str(response)
-    
-    with open('out.png', 'wb') as out:
-          out.write(response.content)
+
+    upload_result = None
+    if request.method == 'POST':
+        file_to_upload = (request.files['image'])
+        server.logger.info('%s file_to_upload', file_to_upload)
+        if file_to_upload:
+            upload_result = cloudinary.uploader.upload(file_to_upload, public_id=file_to_upload.filename)
+            server.logger.info(upload_result)
+    return jsonify(upload_result)
+
