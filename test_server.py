@@ -159,7 +159,13 @@ def test_user(client):
             ##update user
             payload = {'new_username': 'test_update'}
             res = client.put('/users/0', data=json.dumps(payload), content_type='application/json')
-            assert res.status_code ==200
+            assert res.status_code == 200
+
+            res = client.put('/users/999999999', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 404
+            
+
+
 
 
 
