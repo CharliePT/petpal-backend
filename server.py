@@ -1,13 +1,11 @@
 import json
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request 
 import os
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from controllers import dogcat_api
-import requests
-import cloudinary
-import cloudinary.uploader
+
 
 load_dotenv()
 # from controllers import dogs
@@ -320,7 +318,8 @@ def get_user_by_name(username):
 
 @server.route('/users/<int:id>', methods=['PUT'])
 def update_user(id):
-    return update_user_id(id)
+    name = request.json.get('new_username')
+    return update_user_id(id, name)
 
 @server.route('/users/<int:id>', methods=['DELETE'])
 def delete_user(id):
@@ -441,28 +440,3 @@ def run_db():
     return app
 
 run_db()
-
-@server.route('/pets/upload', methods=['POST'])
-def upload():
-    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME")
-    api_key = os.getenv("CLOUDINARY_API_KEY")
-    api_secret = os.getenv("CLOUDINARY_API_SECRET")
-    secure = os.getenv("CLOUDINARY_SECURE") == "True"
-
-    cloudinary.config(
-        cloud_name=cloud_name,
-        api_key=api_key,
-        api_secret=api_secret,
-        secure=secure
-    )
-
-    upload_result = None
-    if request.method == 'POST':
-        file_to_upload = (request.files['image'])
-        server.logger.info('%s file_to_upload', file_to_upload)
-        if file_to_upload:
-            upload_result = cloudinary.uploader.upload(file_to_upload, public_id=file_to_upload.filename)
-            server.logger.info(upload_result)
-    return jsonify(upload_result)
-
-
