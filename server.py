@@ -254,16 +254,16 @@ def home():
 #############################Service-providers###########################################
 
 #routes to add service provider
-@server.route('/service-register', methods=['POST'])
-def create_service_provider():
-    data = request.get_json()
-    username = data["username"]
-    email = data["email"]
-    password = data["password"]
-    service = Services(username = username, email = email, password= password)
-    db.session.add(service)
-    db.session.commit()
-    return {'token' : service.id, "username": service.username }, 201
+# @server.route('/service-register', methods=['POST'])
+# def create_service_provider():
+#     data = request.get_json()
+#     username = data["username"]
+#     email = data["email"]
+#     password = data["password"]
+#     service = Services(username = username, email = email, password= password)
+#     db.session.add(service)
+#     db.session.commit()
+#     return {'token' : service.id, "username": service.username }, 201
 
 
 #route to create service provider profile
