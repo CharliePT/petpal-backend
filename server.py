@@ -209,6 +209,21 @@ class ServiceProfile(db.Model):
             'trainer' : self.trainer,
             's_id' : self.s_id
         }
+
+
+class ServiceCalendar(db.Model):
+    id =db.Column(db.Integer, primary_key=True)
+    sp_id = db.Column(db.Integer)
+    calendar = db.Column(db.Boolean, default=False)
+    events = db.Column(db.String(10000))       
+    
+    @property
+    def serialize(self):
+        return {
+            'sp_id' : self.sp_id,
+            'calendar': self.calendar,
+            'events':self.events
+        }
     # conversation = Conversation.query.filter_by(id=conversation_id).join(Services).first()
     # service_username = conversation.service.username
 @server.route('/')
@@ -230,6 +245,53 @@ def create_service_provider():
     db.session.add(service)
     db.session.commit()
     return {'token' : service.id, "username": service.username }, 201
+
+#route to add calendar to service provider profile
+@server.route('/service/add-calendar', methods=['POST'])
+def create_service_provider_calendar():
+    data= request.get_json()
+    sp_id = data["sp_id"]
+    calendar = data["calendar"]
+    is_calendar = ServiceCalendar.query.filter_by(sp_id =sp_id).first()
+    if is_calendar:
+        is_calendar.calendar = calendar
+        db.session.commit()
+        return {'sp_id': is_calendar.sp_id, 'calendar': is_calendar.calendar}, 201
+    else:
+        s_calendar = ServiceCalendar(sp_id = sp_id, calendar= calendar)
+        db.session.add(s_calendar)
+        db.session.commit()
+        return {'id': s_calendar.id}, 200
+
+#route to check if service provider has initialized calendar
+@server.route('/service/calendar/<int:id>', methods=['GET'])
+def get_service_provider_calendar(id):
+    sp_id = id
+    s_calendar = ServiceCalendar.query.filter_by(sp_id =sp_id).first()
+    if s_calendar:
+        return {'sp_id': s_calendar.sp_id, 'calendar': s_calendar.calendar}, 201
+    else:
+        return {'error': 'User calendar was not initialized'}, 404
+
+#route to add events to service provider calendar
+@server.route('/service/add-events/<int:id>', methods=['POST'])
+def create_service_provider_calendar_events(id):
+   
+    data= request.get_json()
+    print(data)
+   
+    events = data["events"]
+    s_calendar = ServiceCalendar.query.filter_by(sp_id = id).first()
+    s_calendar.events = events
+    db.session.commit()
+    return {'sp_id':s_calendar.sp_id, 'events': s_calendar.events}
+
+#route to get all events of service provider
+@server.route('/service/get-events/<int:id>', methods=['GET'])
+def get_service_provider_calendar_events(id):
+    sp_id = id
+    s_calendar = ServiceCalendar.query.filter_by(sp_id =sp_id).first()
+    return {'sp_id': s_calendar.sp_id, 'events': s_calendar.events }, 201
 
 
 #route to create service provider profile
