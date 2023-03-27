@@ -108,15 +108,15 @@ def test_service_login(client):
 ## Messaging tests ##
 
 ### The below test causes tests to run forever and I don't know why
+def test_user_signup(client):
+    payload = {'username': 'test', 'password': 'jkl'}
+    headers = {'content-type': 'application/json'}
+    res = client.post('/register', json=payload, headers=headers)
+
+    assert res.status_code == 201
 
 # users tests
 
-# def test_user_signup(client):
-#     payload = {'username': 'test', 'password': 'jkl'}
-#     headers = {'content-type': 'application/json'}
-#     res = client.post('/register', json=payload, headers=headers)
-
-#     assert res.status_code == 201
 
 
 
