@@ -130,6 +130,9 @@ def update_password_id(user_id, new_password):
 
 server = Flask(__name__)
 CORS(server, supports_credentials=True)
+#### Added to make tests work
+server.config['SESSION_TYPE'] = 'filesystem'
+####
 server.config['SECRET_KEY'] = 'supersecret'
 SESSION_PERMANENT = False
 SESSION_TYPE = 'sqlalchemy'
@@ -143,7 +146,7 @@ def get_uuid():
 
 class User(db.Model):
     __tablename__ = "users"
-    id = db.Column(db.String(32), primary_key=True, unique=True, default=get_uuid)
+    id = db.Column(db.Integer, primary_key=True, unique=True, default=get_uuid)
     username = db.Column(db.String(35), unique=True)
     password = db.Column(db.Text, nullable=False)
 
@@ -153,16 +156,16 @@ class User(db.Model):
 class Conversation(db.Model):
     __tablename__ = "conversations"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(32), db.ForeignKey("users.id"), nullable=False)
-    service_id = db.Column(db.String(32), db.ForeignKey("services.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey("services.id"), nullable=False)
     messages = db.relationship("Message", backref="conversation", lazy=True)
 
 class Message(db.Model):
     __tablename__ = "messages"
     id = db.Column(db.Integer, primary_key=True)
     conversation_id = db.Column(db.Integer, db.ForeignKey("conversations.id"), nullable=False)
-    sender_user_id = db.Column(db.String(32), db.ForeignKey("users.id"), nullable=True)
-    sender_service_id = db.Column(db.String(32), db.ForeignKey("services.id"), nullable=True)
+    sender_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    sender_service_id = db.Column(db.Integer, db.ForeignKey("services.id"), nullable=True)
     content = db.Column(db.Text, nullable=False)
 
     def serialize(self):
@@ -174,10 +177,10 @@ class Message(db.Model):
             "conversation_id": self.conversation_id
         }
 
-    
+
 class Services(db.Model):
-    # __tablename__ = "service_providers"
-    id = db.Column(db.String(32), primary_key=True, unique=True, default=get_uuid)
+    __tablename__ = "services"
+    id = db.Column(db.Integer, primary_key=True, unique=True, default=get_uuid)
     username = db.Column(db.String(35), unique=True)
     email = db.Column(db.String(35), unique=True)
     password = db.Column(db.Text, nullable=False)
@@ -195,7 +198,7 @@ class Services(db.Model):
         }
 
 class ServiceProfile(db.Model):
-    # __tablename__ = "service_profile"
+    __tablename__ = "service_profile"
     id =db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(35))
     address = db.Column(db.String(50))
@@ -216,7 +219,7 @@ class ServiceProfile(db.Model):
     vet = db.Column(db.Boolean, default=False)
     grooming = db.Column(db.Boolean, default=False)
     trainer = db.Column(db.Boolean, default=False)
-    s_id = db.Column(db.String(32), db.ForeignKey('services.id'))
+    s_id = db.Column(db.Integer, db.ForeignKey('services.id'))
 
     @property
     def serialize(self):
@@ -567,31 +570,31 @@ def upload():
 
     return jsonify({'url': url})
 
-class Pet(db.Model):
-    id = db.Column(db.String(50), primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    age = db.Column(db.Integer, nullable=True)
-    species = db.Column(db.String(50), nullable=False)
-    instructions = db.Column(db.Text)
+# class Pet(db.Model):
+#     id = db.Column(db.String(50), primary_key=True)
+#     name = db.Column(db.String(50), nullable=False)
+#     age = db.Column(db.Integer, nullable=True)
+#     species = db.Column(db.String(50), nullable=False)
+#     instructions = db.Column(db.Text)
 
-    def __repr__(self):
-        return f'<Pet {self.id}>'
+#     def __repr__(self):
+#         return f'<Pet {self.id}>'
 
-@server.route('/upload/pet-profile', methods=['POST'])
-def add_pet():
-    data = request.json
-    pet = Pet(id=data['id'], name=data['name'], age=data['age'], species=data['species'], instructions=data.get('instructions'))
-    db.session.add(pet)
-    db.session.commit()
-    return jsonify({'message': 'Pet Profile added successfully'})
+# @server.route('/upload/pet-profile', methods=['POST'])
+# def add_pet():
+#     data = request.json
+#     pet = Pet(id=data['id'], name=data['name'], age=data['age'], species=data['species'], instructions=data.get('instructions'))
+#     db.session.add(pet)
+#     db.session.commit()
+#     return jsonify({'message': 'Pet Profile added successfully'})
 
-@server.route('/upload/pet-profile/<id>', methods=['GET'])
-def get_pet(id):
-    pet = Pet.query.get(id)
-    if pet:
-        return jsonify({'id': pet.id, 'name': pet.name, 'age': pet.age, 'species': pet.species, 'instructions': pet.instructions})
-    else:
-        return jsonify({'message': 'Pet Profile not found'})
+# @server.route('/upload/pet-profile/<id>', methods=['GET'])
+# def get_pet(id):
+#     pet = Pet.query.get(id)
+#     if pet:
+#         return jsonify({'id': pet.id, 'name': pet.name, 'age': pet.age, 'species': pet.species, 'instructions': pet.instructions})
+#     else:
+#         return jsonify({'message': 'Pet Profile not found'})
 
 
 def run_db():
