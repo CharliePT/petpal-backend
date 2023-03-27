@@ -15,9 +15,6 @@ class dogcat_api:
 
 
 
-
-
-
 # dog_data = dog_api.req(api)
 # print(dog_data)
 
