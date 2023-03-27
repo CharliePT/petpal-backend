@@ -456,13 +456,39 @@ def upload():
         secure=secure
     )
 
-    upload_result = None
+    url = None
     if request.method == 'POST':
         file_to_upload = (request.files['image'])
         server.logger.info('%s file_to_upload', file_to_upload)
         if file_to_upload:
             upload_result = cloudinary.uploader.upload(file_to_upload, public_id=file_to_upload.filename)
             server.logger.info(upload_result)
-    return jsonify(upload_result)
+            url = upload_result.get('url')
 
+    return jsonify({'url': url})
 
+class Pet(db.Model):
+    id = db.Column(db.String(50), primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    age = db.Column(db.Integer, nullable=True)
+    species = db.Column(db.String(50), nullable=False)
+    instructions = db.Column(db.Text)
+
+    def __repr__(self):
+        return f'<Pet {self.id}>'
+
+@server.route('/upload/pet-profile', methods=['POST'])
+def add_pet():
+    data = request.json
+    pet = Pet(id=data['id'], name=data['name'], age=data['age'], species=data['species'], instructions=data.get('instructions'))
+    db.session.add(pet)
+    db.session.commit()
+    return jsonify({'message': 'Pet Profile added successfully'})
+
+@server.route('/upload/pet-profile/<id>', methods=['GET'])
+def get_pet(id):
+    pet = Pet.query.get(id)
+    if pet:
+        return jsonify({'id': pet.id, 'name': pet.name, 'age': pet.age, 'species': pet.species, 'instructions': pet.instructions})
+    else:
+        return jsonify({'message': 'Pet Profile not found'})
