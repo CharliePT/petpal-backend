@@ -24,7 +24,7 @@ def signup():
     user = User(username=username, password=password)
     db.session.add(user)
     db.session.commit()
-    return jsonify({'message': 'Success'}), 200
+    return jsonify({'message': 'Success'}), 201
 
 def signin():
     data = request.get_json()
@@ -79,33 +79,6 @@ def update_user_id(user_id, new_username):
 
         return jsonify({"id": user.id, "username": user.username})
 
-
-pets_list = {
-    "animals": [
-        "Bird",
-        "Cat",
-        "Dog",
-        "Fish",
-        "Guinea Pig",
-        "Hamster",
-        "Iguana",
-        "Jararaca",
-        "Lizard",
-        "Mouse",
-        "Newt",
-        "Owl",
-        "Parakeet",
-        "Rabbit",
-        "Salamander",
-        "Turtle",
-        "Uromastyx lizard",
-        "Vole",
-        "Weasel",
-        "Xolo Dog",
-        "Yak",
-        "Zebra Finch"
-    ]
-}
 
 server = Flask(__name__)
 CORS(server)
@@ -302,12 +275,12 @@ def provider_login():
         else:
             return jsonify(error="wrong password"), 401
     else:
-        return jsonify(error="username does not exist"), 402
+        return jsonify(error="username does not exist"), 404
 
 
 
 #delete service provider and profile
-@server.route('/services/providers/delete/<int:id>', methods=['GET'])
+@server.route('/services/providers/<int:id>', methods=['DELETE'])
 def delete_provider(id):
     provider = Services.query.get(int(id))
     profile = ServiceProfile.query.filter_by(s_id = id).first()
@@ -316,7 +289,7 @@ def delete_provider(id):
             db.session.delete(profile)
         db.session.delete(provider)
         db.session.commit()
-        return {"response":"Provider successfully deleted"}, 201
+        return {"response":"Provider successfully deleted"}, 202
     else:
         return {"Error":"Provider does not exist"}, 404
 
@@ -460,12 +433,10 @@ def cat():
     data = api.get_data('breeds')
     return data
 
-
-
 def run_db():
     app = server
     with app.app_context():
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
     return app
 
@@ -493,4 +464,5 @@ def upload():
             upload_result = cloudinary.uploader.upload(file_to_upload, public_id=file_to_upload.filename)
             server.logger.info(upload_result)
     return jsonify(upload_result)
+
 
