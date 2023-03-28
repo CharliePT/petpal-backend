@@ -365,7 +365,7 @@ def create_service_provider_profile():
 
 @server.route('/services', methods=['GET'])
 def get_all_services():
-    services = Services.query.all()
+    services = ServiceProfile.query.all()
     return jsonify(services=[i.serialize for i in services])
 
 #get service provider profile by profile id
