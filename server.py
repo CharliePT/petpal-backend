@@ -8,7 +8,8 @@ from sqlalchemy import or_
 from dotenv import load_dotenv
 from controllers import dogcat_api
 from uuid import uuid4
-
+import cloudinary
+import cloudinary.uploader
 
 load_dotenv()
 # from controllers import dogs
@@ -374,13 +375,13 @@ def create_service_provider_profile():
 
 @server.route('/services', methods=['GET'])
 def get_all_services():
-    services = ServiceProfile.query.all()
+    services = Services.query.all()
     return jsonify(services=[i.serialize for i in services])
 
 #get service provider profile by profile id
 @server.route('/services/<int:id>', methods=['GET'])
 def get_services_by_id(id):
-    service = ServiceProfile.query.get_or_404(int(id))
+    service = Services.query.get_or_404(int(id))
     return jsonify(service.serialize)
 
 #get service provider profile by provider id
@@ -414,18 +415,25 @@ def get_providers_by_id(id):
 @server.route('/services/service-login', methods=['POST'])
 def provider_login():
     data = request.get_json()
-    username = data.get('serviceName')
-    email = data.get('serviceEmail')
-    password = data.get('servicePassword')
+    print(data)
+    username = data['serviceName']
+    print(username)
+    email = data['serviceEmail']
+    password = data['servicePassword']
     service = Services.query.filter_by(username=username).first()
-    if not service or not service.check_password(password):
-        return jsonify({"error": "Unauthorized"}), 401
-    session["id"] = service.id
-    return jsonify({
-        "id": service.id,
-        "serviceName": service.username,
-        "email": service.email
-    })
+     
+    
+    if service:
+        if service.password == password:
+            session["id"] = service.id
+            return jsonify({
+                "id": service.id,
+                "serviceName": service.username,
+                "email": service.email
+            })
+    else:
+        return jsonify({"error": "Unauthorized"}), 401   
+   
 
 
 
@@ -491,7 +499,7 @@ def create_conversation():
     user = User.query.get(user_id)
     service = Services.query.get(service_id)
     if not user or not service:
-        return({"error": "User or service not found"})
+        return({"error": "User or service not found"}), 404
 
     conversation = Conversation(user_id=user_id, service_id=service_id)
     db.session.add(conversation)
@@ -715,7 +723,7 @@ def create_pet(user_id):
 def run_db():
     app = server
     with app.app_context():
-        db.drop_all()
+        # db.drop_all()
         db.create_all()
     return app
     

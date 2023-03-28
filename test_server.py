@@ -70,9 +70,16 @@ def test_get_services(client):
     assert res.status_code == 200
 
 def test_get_servicebyid(client):
-    res = client.get('/services/1')
+    with server.app_context():
+        server.config['SECRET_KEY'] = 'supersecret'
+        mock_db = create_autospec(db)
+        with patch('server.db', mock_db):
+            service = Services(username = "test_service", email = "test@test", password = "jkl")
+            db.session.add(service)
+            db.session.commit()
 
-    assert res.status_code == 200
+            res = client.get('/services/1')
+            assert res.status_code == 200
 
 def test_get_servicebyid2(client):
     res = client.get('/services/1000000000000')
@@ -132,7 +139,7 @@ def test_user(client):
         with patch('server.db', mock_db):
 
             # create user
-            user = User(id = "0", username = 'test', password = 'jkl')
+            user = User(id = 0, username = 'test', password = 'jkl')
             db.session.add(user)
             db.session.commit()
             
@@ -178,25 +185,35 @@ def test_user(client):
 
 ## Messaging tests ##
 
-def test_messaging(client):
+def test_coversation(client):
     with server.app_context():
         mock_db = create_autospec(db)
         with patch('server.db', mock_db):
             # enter test data into db
             user = User(id = 1, username = 'test1', password = 'jkl')
-            service = Services(id = 1, username = 'service', email = 'service@test', password = 'jkl')
             db.session.add(user)
             db.session.commit()
+            service = Services(id = 1, username = 'service', email = 'service@test', password = 'jkl')
             db.session.add(service)
             db.session.commit()
 
-            payload = {'user_id': 0, 'service_id': 0}
+            payload = {'user_id': 1, 'service_id': 1}
             res = client.post('/conversations', data=json.dumps(payload), content_type='application/json')
-            assert res.status_code == 200
+            assert res.status_code == 201
 
             payload = {'user_id': 999999, 'service_id': 999999}
             res = client.post('/conversations', data=json.dumps(payload), content_type='application/json')
-            assert res.status_code == 404        
+            assert res.status_code == 404
+
+def test_post_message(client):
+      with server.app_context():
+        mock_db = create_autospec(db)
+        with patch('server.db', mock_db):
+            conv = Conversation(id = 0, user_id = 0, service_id = 0)
+            db.session.add(conv)
+            db.session.commit()
+
+            
 
 
 
