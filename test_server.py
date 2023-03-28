@@ -209,11 +209,28 @@ def test_post_message(client):
       with server.app_context():
         mock_db = create_autospec(db)
         with patch('server.db', mock_db):
+            service = Services(id = 0, username = 'test', email = 'test@testing', password = 'jkl')
+            db.session.add(service)
+            db.session.commit()
             conv = Conversation(id = 0, user_id = 0, service_id = 0)
             db.session.add(conv)
             db.session.commit()
 
-            
+            payload = {'sender_id': 0, 'content': 'this is a test message'}
+            res = client.post('/conversations/0/messages', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 201
+
+            res = client.post('/conversations/99999999/messages', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 404
+
+            payload = {'sender_id': 9999999, 'content': 'this is a test message'}
+            res = client.post('/conversations/0/messages', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 404
+
+
+
+
+
 
 
 

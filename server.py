@@ -497,10 +497,10 @@ def add_message(conversation_id):
 
     conversation = Conversation.query.get(conversation_id)
     if not conversation:
-        return {"error": "Conversation not found"}
+        return {"error": "Conversation not found"}, 404
 
     if sender_id not in [conversation.user_id, conversation.service_id]:
-        return {"error": "Sender is not a participant in the conversation"}
+        return {"error": "Sender is not a participant in the conversation"}, 404
 
     if sender_id == conversation.user_id:
         sender_user_id = sender_id
