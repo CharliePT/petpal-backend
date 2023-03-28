@@ -482,7 +482,7 @@ def create_conversation():
     user = User.query.get(user_id)
     service = Services.query.get(service_id)
     if not user or not service:
-        return({"error": "User or service not found"})
+        return({"error": "User or service not found"}), 404
 
     conversation = Conversation(user_id=user_id, service_id=service_id)
     db.session.add(conversation)
