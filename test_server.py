@@ -152,29 +152,29 @@ def test_user(client):
             res = client.get('/users/0')
             assert res.status_code == 200
 
-            # res = client.get('/users/99999')
-            # assert res.status_code == 404
+            res = client.get('/users/99999')
+            assert res.status_code == 404
 
-            # res = client.get('/users/test')
-            # assert res.status_code == 200
+            res = client.get('/users/test')
+            assert res.status_code == 200
 
-            # res = client.get('/users/fail')
-            # assert res.status_code == 404
+            res = client.get('/users/fail')
+            assert res.status_code == 404
 
-            # # ##update user
-            # # payload = {'new_username': 'test_update'}
-            # # res = client.put('/users/0', data=json.dumps(payload), content_type='application/json')
-            # # assert res.status_code == 200
+            ##update user
+            payload = {'new_username': 'test_update'}
+            res = client.put('/users/0', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 200
 
-            # # res = client.put('/users/999999999', data=json.dumps(payload), content_type='application/json')
-            # # assert res.status_code == 404
+            res = client.put('/users/999999999', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 404
 
-            # # ##delete user
-            # # res = client.delete('/users/0')
-            # # assert res.status_code == 200
+            ##delete user
+            res = client.delete('/users/0')
+            assert res.status_code == 200
 
-            # # res = client.delete('/users/999999999')
-            # # assert res.status_code == 404
+            res = client.delete('/users/999999999')
+            assert res.status_code == 404
 
 ## Messaging tests ##
 
