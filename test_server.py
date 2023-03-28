@@ -70,9 +70,16 @@ def test_get_services(client):
     assert res.status_code == 200
 
 def test_get_servicebyid(client):
-    res = client.get('/services/1')
+    with server.app_context():
+        server.config['SECRET_KEY'] = 'supersecret'
+        mock_db = create_autospec(db)
+        with patch('server.db', mock_db):
+            service = Services(username = "test_service", email = "test@test", password = "jkl")
+            db.session.add(service)
+            db.session.commit()
 
-    assert res.status_code == 200
+            res = client.get('/services/1')
+            assert res.status_code == 200
 
 def test_get_servicebyid2(client):
     res = client.get('/services/1000000000000')
@@ -132,7 +139,7 @@ def test_user(client):
         with patch('server.db', mock_db):
 
             # create user
-            user = User(id = "0", username = 'test', password = 'jkl')
+            user = User(id = 0, username = 'test', password = 'jkl')
             db.session.add(user)
             db.session.commit()
             
