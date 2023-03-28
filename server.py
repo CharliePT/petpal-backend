@@ -147,7 +147,7 @@ def get_uuid():
 
 class User(db.Model):
     __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True, unique=True, default=get_uuid)
+    id = db.Column(db.Integer, primary_key=True, unique=True)
     username = db.Column(db.String(35), unique=True)
     password = db.Column(db.Text, nullable=False)
 
@@ -365,7 +365,7 @@ def create_service_provider_profile():
 
 @server.route('/services', methods=['GET'])
 def get_all_services():
-    services = Services.query.all()
+    services = ServiceProfile.query.all()
     return jsonify(services=[i.serialize for i in services])
 
 #get service provider profile by profile id
