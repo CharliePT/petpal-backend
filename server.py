@@ -405,18 +405,25 @@ def get_providers_by_id(id):
 @server.route('/services/service-login', methods=['POST'])
 def provider_login():
     data = request.get_json()
-    username = data.get('serviceName')
-    email = data.get('serviceEmail')
-    password = data.get('servicePassword')
+    print(data)
+    username = data['serviceName']
+    print(username)
+    email = data['serviceEmail']
+    password = data['servicePassword']
     service = Services.query.filter_by(username=username).first()
-    if not service or not service.check_password(password):
-        return jsonify({"error": "Unauthorized"}), 401
-    session["id"] = service.id
-    return jsonify({
-        "id": service.id,
-        "serviceName": service.username,
-        "email": service.email
-    })
+     
+    
+    if service:
+        if service.password == password:
+            session["id"] = service.id
+            return jsonify({
+                "id": service.id,
+                "serviceName": service.username,
+                "email": service.email
+            })
+    else:
+        return jsonify({"error": "Unauthorized"}), 401   
+   
 
 
 
@@ -663,7 +670,7 @@ def upload():
 def run_db():
     app = server
     with app.app_context():
-        db.drop_all()
+        # db.drop_all()
         db.create_all()
     return app
     
