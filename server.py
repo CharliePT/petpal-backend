@@ -8,7 +8,8 @@ from sqlalchemy import or_
 from dotenv import load_dotenv
 from controllers import dogcat_api
 from uuid import uuid4
-
+import cloudinary
+import cloudinary.uploader
 
 load_dotenv()
 # from controllers import dogs
