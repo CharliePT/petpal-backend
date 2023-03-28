@@ -7,3 +7,4 @@ venv/
 .env
 config.py
 mynotes.md
+flask_session/

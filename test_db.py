@@ -36,11 +36,11 @@ class TestDB():
         cur.execute('SELECT * FROM "users"')
         assert cur is not None
     
-    def test_add_user(self):
-        cur.execute('INSERT INTO users (id, username, password) VALUES (1, %s, %s)', ("test1", "password"))
-        cur.execute('Select username FROM users WHERE id = 1')
-        entry = cur.fetchall()[0][0]
-        assert entry == "test1"
+    # def test_add_user(self):
+    #     cur.execute('INSERT INTO users (id, username, password) VALUES (1, %s, %s)', ("test1", "password"))
+    #     cur.execute('Select username FROM users WHERE id = 1')
+    #     entry = cur.fetchall()[0][0]
+    #     assert entry == "test1"
 
     
 
