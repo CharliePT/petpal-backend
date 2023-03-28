@@ -8,7 +8,8 @@ from sqlalchemy import or_
 from dotenv import load_dotenv
 from controllers import dogcat_api
 from uuid import uuid4
-
+import cloudinary
+import cloudinary.uploader
 
 load_dotenv()
 # from controllers import dogs
@@ -567,31 +568,31 @@ def upload():
 
     return jsonify({'url': url})
 
-class Pet(db.Model):
-    id = db.Column(db.String(50), primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
-    age = db.Column(db.Integer, nullable=True)
-    species = db.Column(db.String(50), nullable=False)
-    instructions = db.Column(db.Text)
+# class Pet(db.Model):
+#     id = db.Column(db.String(50), primary_key=True)
+#     name = db.Column(db.String(50), nullable=False)
+#     age = db.Column(db.Integer, nullable=True)
+#     species = db.Column(db.String(50), nullable=False)
+#     instructions = db.Column(db.Text)
 
-    def __repr__(self):
-        return f'<Pet {self.id}>'
+#     def __repr__(self):
+#         return f'<Pet {self.id}>'
 
-@server.route('/upload/pet-profile', methods=['POST'])
-def add_pet():
-    data = request.json
-    pet = Pet(id=data['id'], name=data['name'], age=data['age'], species=data['species'], instructions=data.get('instructions'))
-    db.session.add(pet)
-    db.session.commit()
-    return jsonify({'message': 'Pet Profile added successfully'})
+# @server.route('/upload/pet-profile', methods=['POST'])
+# def add_pet():
+#     data = request.json
+#     pet = Pet(id=data['id'], name=data['name'], age=data['age'], species=data['species'], instructions=data.get('instructions'))
+#     db.session.add(pet)
+#     db.session.commit()
+#     return jsonify({'message': 'Pet Profile added successfully'})
 
-@server.route('/upload/pet-profile/<id>', methods=['GET'])
-def get_pet(id):
-    pet = Pet.query.get(id)
-    if pet:
-        return jsonify({'id': pet.id, 'name': pet.name, 'age': pet.age, 'species': pet.species, 'instructions': pet.instructions})
-    else:
-        return jsonify({'message': 'Pet Profile not found'})
+# @server.route('/upload/pet-profile/<id>', methods=['GET'])
+# def get_pet(id):
+#     pet = Pet.query.get(id)
+#     if pet:
+#         return jsonify({'id': pet.id, 'name': pet.name, 'age': pet.age, 'species': pet.species, 'instructions': pet.instructions})
+#     else:
+#         return jsonify({'message': 'Pet Profile not found'})
 
 
 def run_db():
