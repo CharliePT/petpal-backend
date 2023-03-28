@@ -185,7 +185,7 @@ def test_user(client):
 
 ## Messaging tests ##
 
-def test_messaging(client):
+def test_coversation(client):
     with server.app_context():
         mock_db = create_autospec(db)
         with patch('server.db', mock_db):
@@ -203,7 +203,17 @@ def test_messaging(client):
 
             payload = {'user_id': 999999, 'service_id': 999999}
             res = client.post('/conversations', data=json.dumps(payload), content_type='application/json')
-            assert res.status_code == 404        
+            assert res.status_code == 404
+
+def test_post_message(client):
+      with server.app_context():
+        mock_db = create_autospec(db)
+        with patch('server.db', mock_db):
+            conv = Conversation(id = 0, user_id = 0, service_id = 0)
+            db.session.add(conv)
+            db.session.commit()
+
+            
 
 
 
