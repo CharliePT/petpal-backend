@@ -636,6 +636,11 @@ def upload():
             upload_result = cloudinary.uploader.upload(file_to_upload, public_id=file_to_upload.filename)
             server.logger.info(upload_result)
             url = upload_result.get('url')
+            #user_id = get_user_id() 
+            # user_profile = UserProfile.query.filter_by(user_id=user_id).first() 
+            # user_profile.image_url = url
+            # db.session.commit()
+
 
     return jsonify({'url': url})
 
