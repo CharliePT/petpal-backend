@@ -413,14 +413,13 @@ def provider_login():
     service = Services.query.filter_by(username=username).first()
      
     
-    if service:
-        if service.password == password:
-            session["id"] = service.id
-            return jsonify({
-                "id": service.id,
-                "serviceName": service.username,
-                "email": service.email
-            })
+    if service and service.password == password:
+        session["id"] = service.id
+        return jsonify({
+            "id": service.id,
+            "serviceName": service.username,
+            "email": service.email
+        })
     else:
         return jsonify({"error": "Unauthorized"}), 401   
    
@@ -670,7 +669,7 @@ def upload():
 def run_db():
     app = server
     with app.app_context():
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
     return app
     
