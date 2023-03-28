@@ -302,13 +302,13 @@ def create_service_provider_profile():
 
 @server.route('/services', methods=['GET'])
 def get_all_services():
-    services = ServiceProfile.query.all()
+    services = Services.query.all()
     return jsonify(services=[i.serialize for i in services])
 
 #get service provider profile by profile id
 @server.route('/services/<int:id>', methods=['GET'])
 def get_services_by_id(id):
-    service = ServiceProfile.query.get_or_404(int(id))
+    service = Services.query.get_or_404(int(id))
     return jsonify(service.serialize)
 
 #get service provider profile by provider id
