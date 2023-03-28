@@ -50,7 +50,7 @@ def signin():
 
 #     if not user_id:
 #         return jsonify({"error": "Unauthorised"}), 401
-    
+
 #     user = User.query.filter_by(id=user_id).first()
 #     return jsonify({
 #         "id": user.id,

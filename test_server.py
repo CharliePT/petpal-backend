@@ -95,19 +95,19 @@ def test_delete_provider(client):
     assert res.status_code == 202
 
 def test_service_login(client):
-    payload = {'username': 'test2', 'email': 'test2@test', 'password': 'jkl'}
+    payload = {'serviceName': 'test2', 'serviceEmail': 'test2@test', 'servicePassword': 'jkl'}
     headers = {'content-type': 'application/json'}
     client.post('/service-register', json=payload, headers=headers)
     res = client.post('/services/service-login', json=payload, headers=headers)
     assert res.status_code == 200
 
-    payload = {'username': 'test2', 'email': 'test2@test', 'password': 'wrong'}
+    payload = {'serviceName': 'test2', 'serviceEmail': 'test2@test', 'servicePassword': 'wrong'}
     res = client.post('/services/service-login', json=payload, headers=headers)
     assert res.status_code == 401
 
-    payload = {'username': 'wrong', 'email': 'test2@test', 'password': 'jkl'}
+    payload = {'serviceName': 'wrong', 'serviceEmail': 'test2@test', 'servicePassword': 'jkl'}
     res = client.post('/services/service-login', json=payload, headers=headers)
-    assert res.status_code == 404
+    assert res.status_code == 401
 
 
 # users tests
@@ -178,25 +178,25 @@ def test_user(client):
 
 ## Messaging tests ##
 
-# def test_messaging(client):
-#     with server.app_context():
-#         mock_db = create_autospec(db)
-#         with patch('server.db', mock_db):
-#             # enter test data into db
-#             user = User(id = 1, username = 'test1', password = 'jkl')
-#             service = Services(id = 1, username = 'service', email = 'service@test', password = 'jkl')
-#             db.session.add(user)
-#             db.session.commit()
-#             db.session.add(service)
-#             db.session.commit()
+def test_messaging(client):
+    with server.app_context():
+        mock_db = create_autospec(db)
+        with patch('server.db', mock_db):
+            # enter test data into db
+            user = User(id = 1, username = 'test1', password = 'jkl')
+            service = Services(id = 1, username = 'service', email = 'service@test', password = 'jkl')
+            db.session.add(user)
+            db.session.commit()
+            db.session.add(service)
+            db.session.commit()
 
-            # payload = {'user_id': 0, 'service_id': 0}
-            # res = client.post('/conversations', data=json.dumps(payload), content_type='application/json')
-            # assert res.status_code == 200
+            payload = {'user_id': 0, 'service_id': 0}
+            res = client.post('/conversations', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 200
 
-            # payload = {'user_id': 999999, 'service_id': 999999}
-            # res = client.post('/conversations', data=json.dumps(payload), content_type='application/json')
-            # assert res.status_code == 404        
+            payload = {'user_id': 999999, 'service_id': 999999}
+            res = client.post('/conversations', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 404        
 
 
 
