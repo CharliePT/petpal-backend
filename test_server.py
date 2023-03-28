@@ -5,7 +5,11 @@ import requests
 import json
 from unittest.mock import MagicMock, create_autospec, patch
 
-
+def clear_database():
+    meta = db.metadata
+    for table in reversed(meta.sorted_tables):
+        db.session.execute(table.delete())
+    db.session.commit()
 
 class TestAPI():
     def test_welcome(self, api):
@@ -206,14 +210,50 @@ def test_coversation(client):
             assert res.status_code == 404
 
 def test_post_message(client):
-      with server.app_context():
+    with server.app_context():
         mock_db = create_autospec(db)
         with patch('server.db', mock_db):
+            service = Services(id = 0, username = 'test', email = 'test@testing', password = 'jkl')
+            db.session.add(service)
+            db.session.commit()
             conv = Conversation(id = 0, user_id = 0, service_id = 0)
             db.session.add(conv)
             db.session.commit()
 
-            
+            payload = {'sender_id': 0, 'content': 'this is a test message'}
+            res = client.post('/conversations/0/messages', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 201
+
+            res = client.post('/conversations/99999999/messages', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 404
+
+            payload = {'sender_id': 9999999, 'content': 'this is a test message'}
+            res = client.post('/conversations/0/messages', data=json.dumps(payload), content_type='application/json')
+            assert res.status_code == 404
+
+def test_get_coversations_by_user(client):
+    with server.app_context():
+        clear_database()
+        mock_db = create_autospec(db)
+        with patch('server.db', mock_db):
+            user = User(username="test_user", password="test")
+            db.session.add(user)
+            db.session.commit()
+            service = Services(username="test_service2", email="test@conversation", password="test")
+            db.session.add(service)
+            db.session.commit()
+            conversation = Conversation(user_id=user.id, service_id=service.id)
+            db.session.add(conversation)
+            db.session.commit()
+
+            response = client.get("/conversations", query_string={"user_id": user.id})
+            assert response.status_code == 200
+
+
+
+
+
+
 
 
 
