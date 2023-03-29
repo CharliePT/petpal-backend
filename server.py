@@ -138,9 +138,13 @@ server.config['SECRET_KEY'] = 'supersecret'
 SESSION_PERMANENT = False
 SESSION_TYPE = 'sqlalchemy'
 Session(server)
-
+server.config['SESSION_COOKIE_NAME'] = 'thecookie'
+server.config['SESSION_COOKIE_SECURE'] = True
+server.config['SESSION_COOKIE_SAMESITE'] = 'None'
+server.config['SESSION_COOKIE_PATH'] = 'https://radiant-blini-990c1d.netlify.app/'
 server.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 db = SQLAlchemy(server)
+
 
 def get_uuid():
     return uuid4().hex
