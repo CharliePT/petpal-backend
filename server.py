@@ -375,7 +375,7 @@ def create_service_provider_profile():
 
 @server.route('/services', methods=['GET'])
 def get_all_services():
-    services = Services.query.all()
+    services = ServiceProfile.query.all()
     return jsonify(services=[i.serialize for i in services])
 
 #get service provider profile by profile id
@@ -423,14 +423,13 @@ def provider_login():
     service = Services.query.filter_by(username=username).first()
      
     
-    if service:
-        if service.password == password:
-            session["id"] = service.id
-            return jsonify({
-                "id": service.id,
-                "serviceName": service.username,
-                "email": service.email
-            })
+    if service and service.password == password:
+        session["id"] = service.id
+        return jsonify({
+            "id": service.id,
+            "serviceName": service.username,
+            "email": service.email
+        })
     else:
         return jsonify({"error": "Unauthorized"}), 401   
    
@@ -514,10 +513,10 @@ def add_message(conversation_id):
 
     conversation = Conversation.query.get(conversation_id)
     if not conversation:
-        return {"error": "Conversation not found"}
+        return {"error": "Conversation not found"}, 404
 
     if sender_id not in [conversation.user_id, conversation.service_id]:
-        return {"error": "Sender is not a participant in the conversation"}
+        return {"error": "Sender is not a participant in the conversation"}, 404
 
     if sender_id == conversation.user_id:
         sender_user_id = sender_id
@@ -647,6 +646,11 @@ def upload():
             upload_result = cloudinary.uploader.upload(file_to_upload, public_id=file_to_upload.filename)
             server.logger.info(upload_result)
             url = upload_result.get('url')
+            #user_id = get_user_id() 
+            # user_profile = UserProfile.query.filter_by(user_id=user_id).first() 
+            # user_profile.image_url = url
+            # db.session.commit()
+
 
     return jsonify({'url': url})
 
