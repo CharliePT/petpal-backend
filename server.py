@@ -727,7 +727,7 @@ def create_pet(user_id):
 def run_db():
     app = server
     with app.app_context():
-        # db.drop_all()
+        db.drop_all()
         db.create_all()
     return app
     
