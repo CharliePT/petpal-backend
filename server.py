@@ -150,9 +150,19 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, unique=True)
     username = db.Column(db.String(35), unique=True)
     password = db.Column(db.Text, nullable=False)
+    pets = db.relationship('Pet', backref='owner', lazy=True)
 
     def check_password(self, password):
         return self.password == password
+
+class Pet(db.Model):
+    __tablename__ = "pets"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    animal_type = db.Column(db.String(50), nullable=False)
+    animal_age= db.Column(db.String(50), nullable=False)
+    comment = db.Column(db.Text)
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
 class Conversation(db.Model):
     __tablename__ = "conversations"
@@ -643,6 +653,49 @@ def upload():
 
 
     return jsonify({'url': url})
+
+@server.route('/users/<int:user_id>/pets', methods=['GET'])
+def get_user_pets(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found.'}), 404
+
+    pets = [pet.__dict__ for pet in user.pets]
+    for pet in pets:
+        pet.pop('_sa_instance_state')
+
+    return jsonify(pets)
+
+@server.route('/users/<int:user_id>/pets', methods=['POST'])
+def create_pet(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'error': 'User not found.'}), 404
+
+    # Get pet data from request
+    data = request.get_json()
+    name = data.get('name')
+    animal_type = data.get('animal_type')
+    animal_age = data.get('animal_age')
+    comment = data.get('comment')
+
+    # Create new pet
+    pet = Pet(
+        name=name,
+        animal_type=animal_type,
+        animal_age=animal_age,
+        comment=comment,
+        owner=user
+    )
+
+    # Add and commit pet to database
+    db.session.add(pet)
+    db.session.commit()
+
+    # Return new pet ID as response
+    return jsonify({'id': pet.id})
+
+
 
 # class Pet(db.Model):
 #     id = db.Column(db.String(50), primary_key=True)
