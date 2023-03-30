@@ -214,6 +214,8 @@ class ServiceProfile(db.Model):
     name = db.Column(db.String(35))
     address = db.Column(db.String(50))
     city = db.Column(db.String(35))
+    icon = db.Column(db.String(100))
+    picture = db.Column(db.String(100))
     postcode = db.Column(db.String(15))
     phone = db.Column(db.String(35))
     latitude = db.Column(db.Float)
@@ -255,6 +257,8 @@ class ServiceProfile(db.Model):
             'vet' : self.vet,
             'grooming' : self.grooming,
             'trainer' : self.trainer,
+            'icon': self.icon,
+            'picture': self.picture,
             's_id' : self.s_id
         }
 
@@ -366,10 +370,28 @@ def create_service_provider_profile():
     vet = data["vet"],
     grooming = data["grooming"],
     trainer = data["trainer"],
+    # icon = data["icon"],
+    # picture = data["picture"],
     service = s)
     db.session.add(profile)
     db.session.commit()
     return {'p_id' : profile.id},201
+
+
+#add profile picture and icon for service provider
+@server.route('/service/add-picture/<int:id>', methods=['POST'])
+def create_service_provider_pictures(id):
+   
+    data= request.get_json()
+    print(data)
+   
+    picture = data["picture"]
+    icon = data["icon"]
+    s_profile = ServiceProfile.query.filter_by(s_id = id).first()
+    s_profile.icon = icon
+    s_profile.picture = picture
+    db.session.commit()
+    return {'s_id':id}
 
 #retrieve all service provider profiles
 
