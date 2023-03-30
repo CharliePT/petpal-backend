@@ -382,18 +382,24 @@ def create_service_provider_profile():
     return {'p_id' : profile.id},201
 
 
-#add profile picture and icon for service provider
+#add profile picture  for service provider
 @server.route('/service/add-picture/<int:id>', methods=['POST'])
 def create_service_provider_pictures(id):
    
     data= request.get_json()
-    print(data)
-   
     picture = data["picture"]
+    s_profile = ServiceProfile.query.filter_by(s_id = id).first()
+    s_profile.picture = picture
+    db.session.commit()
+    return {'s_id':id}
+
+    #add profile  icon for service provider
+@server.route('/service/add-icon/<int:id>', methods=['POST'])
+def create_service_provider_icons(id):
+    data= request.get_json()
     icon = data["icon"]
     s_profile = ServiceProfile.query.filter_by(s_id = id).first()
     s_profile.icon = icon
-    s_profile.picture = picture
     db.session.commit()
     return {'s_id':id}
 
